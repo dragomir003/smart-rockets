@@ -32,7 +32,7 @@ pub struct Rocket {
 impl Rocket {
     pub fn randomize(start: sge::Point, goal: Rc<sge::Point>, dna_len: usize) -> Self {
         let dna = (0..dna_len)
-            .map(|_| sge::Point::new(random::<i32>() % 30, random::<i32>() % 30))
+            .map(|_| sge::Point::new(random::<i32>() % 15, random::<i32>() % 15))
             .collect::<Vec<_>>();
 
         Self {

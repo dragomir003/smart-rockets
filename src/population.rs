@@ -94,11 +94,6 @@ impl<Phen: Phenotype> Population<Phen> {
 
         let best_score = scores.iter().max().unwrap().0;
 
-        let best_phen = self.get().iter()
-            .filter(|p| p.calculate_fitness() == best_score)
-            .nth(0)
-            .unwrap();
-
         // Map scores in range [0, 1]
         scores
             .iter_mut()
@@ -114,18 +109,11 @@ impl<Phen: Phenotype> Population<Phen> {
             })
             .collect();
 
-        let mut res = (0..m).fold(Vec::with_capacity(m), |mut res, _| {
+        (0..m).fold(Vec::with_capacity(m), |mut res, _| {
             let idx = chances[random::<usize>() % chances.len()];
             res.push(&self.get()[idx]);
             res
-        });
-
-        // if res.len() > 0 {
-        //     res.pop();
-        // }
-        // res.push(best_phen);
-
-        res
+        })
     }
 
     /// Combines multiple phenotypes, so that a new generation can be created.
@@ -141,11 +129,6 @@ impl<Phen: Phenotype> Population<Phen> {
                 result.push(phen);
             }
         }
-
-        // if result.len() > 0 {
-        //     result.pop();
-        // }
-        // result.push(Phenotype::from(*phenotypes.last().unwrap()));
 
         result
     }
