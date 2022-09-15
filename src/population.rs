@@ -1,9 +1,9 @@
 ///! This module holds everything that describes genetic algorithm
-use float_ord::FloatOrd;
+
 use rand::random;
 
 /// Trait that encapsulates behaviour one object or ```phenotype```
-pub trait Phenotype: Clone {
+pub trait Phenotype {
     /// Updates object's state. Represents one action a phenotype takes while
     /// it is alive.
     /// # Returns
@@ -63,7 +63,7 @@ impl<Phen: Phenotype> Population<Phen> {
 
     /// Finds ```m``` best phenotypes in current population, where ```m``` is
     /// the number of phenotypes, which can be crossovered into the population of
-    /// the same size, or a bit smaller size(see formula for explanation)
+    /// the same size, or a roughly equal size(see formula for explanation)
     ///
     /// # Formula
     ///
@@ -81,39 +81,34 @@ impl<Phen: Phenotype> Population<Phen> {
     /// # Returns
     /// Array of best phenotypes.
     fn get_best(&self) -> Vec<&Phen> {
-        let p = self.get().len() as f32;
+        let population_size = self.get().len() as f32;
+        let probability: f32 = 1.0;
 
-        let m: usize = ((1.0 + (1.0 + 8.0 * p).sqrt()) / 2.0).round() as usize;
+        let tournament_size = population_size as usize / 3;
+        let no_tournaments: usize = ((1.0 + (1.0 + 8.0 * population_size).sqrt()) / 2.0).round() as usize;
 
-        let mut scores: Vec<FloatOrd<f32>> = self
-            .get()
-            .iter()
-            .map(Phen::calculate_fitness)
-            .map(FloatOrd)
-            .collect();
+        (0..no_tournaments)
+            .map(|_| {
+                let mut members = (0..tournament_size)
+                    .map(|_| random::<usize>() % population_size as usize)
+                    .map(|idx| &self.get()[idx])
+                    .collect::<Vec<_>>();
 
-        let best_score = scores.iter().max().unwrap().0;
+                members
+                    .sort_by(|p1, p2| p1.calculate_fitness().total_cmp(&p2.calculate_fitness()));
 
-        // Map scores in range [0, 1]
-        scores
-            .iter_mut()
-            .for_each(|x: &mut FloatOrd<f32>| *x = FloatOrd(x.0 / best_score));
+                let chance = random::<f32>();
 
+                let r = 1_f32 - probability;
+                let p = probability;
 
-        // Repeat element's index with respect to it's score
-        let chances: Vec<usize> = scores
-            .iter()
-            .enumerate()
-            .flat_map(|(idx, score)| {
-                std::iter::repeat(idx).take((score.0 * 100.0).round() as usize)
-            })
-            .collect();
+                let winner = (0..)
+                    .take_while(|x| chance > p * (1_f32 - r.powi(x + 1)) / (1_f32 - r))
+                    .take(members.len() - 1)
+                    .count();
 
-        (0..m).fold(Vec::with_capacity(m), |mut res, _| {
-            let idx = chances[random::<usize>() % chances.len()];
-            res.push(&self.get()[idx]);
-            res
-        })
+                members[members.len() - 1 - winner]
+            }).collect()
     }
 
     /// Combines multiple phenotypes, so that a new generation can be created.

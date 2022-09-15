@@ -16,7 +16,7 @@ enum RocketState {
 }
 
 /// Represents a rocket that is trying to find the goal.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Rocket {
     pub coords: sge::Point,
     start: sge::Point,

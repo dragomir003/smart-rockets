@@ -44,12 +44,12 @@ impl Application for App {
     ) -> sge::ApplicationResult {
         let (_, height) = WINDOW_DIMENSIONS;
         // Generate random rockets
-        let rockets = (1..500)
+        let rockets = (1..50)
             .map(|_| {
                 Rocket::randomize(
                     sge::Point::new(10, height as i32 - 10),
                     Rc::clone(&self.goal),
-                    50,
+                    30,
                 )
             })
             .collect::<Vec<_>>();
